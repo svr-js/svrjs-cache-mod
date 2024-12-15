@@ -81,6 +81,16 @@ describe("shouldCacheResponse", () => {
     expect(shouldCacheResponse(cacheControl, true)).toBe(false);
   });
 
+  test("should return true if s-maxage is present and not authenticated", () => {
+    const cacheControl = { "s-maxage": "3600" };
+    expect(shouldCacheResponse(cacheControl, false)).toBe(true);
+  });
+
+  test("should return false if s-maxage is present and authenticated", () => {
+    const cacheControl = { "s-maxage": "3600" };
+    expect(shouldCacheResponse(cacheControl, true)).toBe(false);
+  });
+
   test("should return false if no relevant directives are present", () => {
     const cacheControl = {};
     expect(shouldCacheResponse(cacheControl, false)).toBe(false);

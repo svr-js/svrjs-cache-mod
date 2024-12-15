@@ -20,12 +20,18 @@ function shouldCacheResponse(cacheControl, isAuthenticated) {
   if (cacheControl["public"]) {
     return true;
   }
-  return !isAuthenticated && cacheControl["max-age"] !== undefined;
+  return (
+    !isAuthenticated &&
+    (cacheControl["max-age"] !== undefined ||
+      cacheControl["s-maxage"] !== undefined)
+  );
 }
 
 function isCacheValid(entry, requestHeaders) {
   const { timestamp, cacheControl } = entry;
-  const maxAge = parseInt(cacheControl["max-age"], 10);
+  const maxAge = cacheControl["s-maxage"]
+    ? parseInt(cacheControl["s-maxage"], 10)
+    : parseInt(cacheControl["max-age"], 10);
   if (Date.now() - timestamp > maxAge * 1000) {
     return false;
   }
