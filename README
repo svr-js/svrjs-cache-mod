@@ -1,0 +1,29 @@
+This repository contains SVR.JS mod starter code and its build system
+The mod will work for SVR.JS Nightly-GitNext.
+
+Before doing anything, run "npm install".
+To build SVR.JS mod, run "npm run build".
+To check SVR.JS mod code for errors with ESLint, run "npm run lint".
+To fix and beautify SVR.JS mod code with ESLint and Prettier, run "npm run lint:fix".
+To perform unit tests with Jest, run "npm test".
+
+To test the mod:
+1. Clone the SVR.JS repository with "git clone https://git.svrjs.org/svrjs/svrjs.git" command.
+2. Change the working directory to "svrjs" using "cd svrjs".
+3. Build SVR.JS by first running "npm install" and then running "npm run build".
+4. Copy the mod into mods directory in the dist directory using "cp ../dist/mod.js dist/mods" (GNU/Linux, Unix, BSD) or "copy ..\dist\mod.js dist\mods" (Windows).
+5. Do the necessary mod configuration if the mod requires it.
+6. Run SVR.JS by running "npm start".
+7. Do some requests to the endpoints covered by the mod.
+
+Structure:
+ - dist - contains the built SVR.JS mod
+ - src - contains SVR.JS mod source code
+   - index.js - entry point
+   - utils - utility functions
+ - tests - Jest unit tests
+   - utils - unit tests for utility functions
+ - esbuild.config.js - the build script
+ - eslint.config.js - ESLint configuration
+ - jest.config.js - Jest configuration
+ - modInfo.json - SVR.JS mod name and version
