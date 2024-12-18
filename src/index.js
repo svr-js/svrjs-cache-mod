@@ -127,7 +127,7 @@ module.exports = function (req, res, logFacilities, config, next) {
       !maximumCachedResponseSizeExceeded &&
       shouldCacheResponse(
         responseCacheControl,
-        req.headers.authentication !== undefined
+        req.headers.authorization !== undefined
       )
     ) {
       if (!responseCacheControl["max-age"])
