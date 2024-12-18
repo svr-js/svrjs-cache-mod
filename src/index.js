@@ -76,10 +76,10 @@ module.exports = function (req, res, logFacilities, config, next) {
   let maximumCachedResponseSizeExceeded = false;
 
   res.writeHead = function (statusCode, statusCodeDescription, headers) {
-    writtenHeaders = Object.assign(
-      writtenHeaders,
-      headers ? headers : statusCodeDescription
-    );
+    const properHeaders = headers ? headers : statusCodeDescription;
+    Object.keys(properHeaders).forEach((key) => {
+      writtenHeaders[key.toLowerCase()] = properHeaders[key];
+    });
     writtenStatusCode = statusCode;
     res.setHeader("X-SVRJS-Cache", "MISS");
     if (headers) {
