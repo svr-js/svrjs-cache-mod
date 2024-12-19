@@ -77,11 +77,13 @@ module.exports = function (req, res, logFacilities, config, next) {
 
   res.writeHead = function (statusCode, statusCodeDescription, headers) {
     const properHeaders = headers ? headers : statusCodeDescription;
-    Object.keys(properHeaders).forEach((key) => {
-      writtenHeaders[key.toLowerCase()] = properHeaders[key];
-    });
-    writtenStatusCode = statusCode;
-    res.setHeader("X-SVRJS-Cache", "MISS");
+    if (typeof properHeaders === "object" && properHeaders !== null) {
+      Object.keys(properHeaders).forEach((key) => {
+        writtenHeaders[key.toLowerCase()] = properHeaders[key];
+      });
+      writtenStatusCode = statusCode;
+      res.setHeader("X-SVRJS-Cache", "MISS");
+    }
     if (headers) {
       originalWriteHead(
         writtenStatusCode,
