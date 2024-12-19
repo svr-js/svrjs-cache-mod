@@ -84,7 +84,7 @@ module.exports = function (req, res, logFacilities, config, next) {
     }
     writtenStatusCode = statusCode;
     res.setHeader("X-SVRJS-Cache", "MISS");
-    if (headers) {
+    if (headers || typeof statusCodeDescription !== "object") {
       originalWriteHead(
         writtenStatusCode,
         statusCodeDescription,
