@@ -30,6 +30,7 @@ describe("SVR.JS Cache mod", () => {
     res = {
       headers: {},
       writeHead: resWriteHead,
+      write: jest.fn(),
       end: resEnd,
       setHeader: jest.fn(),
       getHeaderNames: jest.fn(() => []),

@@ -69,11 +69,13 @@ module.exports = function (req, res, logFacilities, config, next) {
 
   // Capture the response
   const originalWriteHead = res.writeHead.bind(res);
+  const originalWrite = res.write.bind(res);
   const originalEnd = res.end.bind(res);
   let writtenHeaders = res.getHeaders();
   let writtenStatusCode = 200;
   let responseBody = "";
   let maximumCachedResponseSizeExceeded = false;
+  let piping = false;
 
   res.writeHead = function (statusCode, statusCodeDescription, headers) {
     const properHeaders = headers ? headers : statusCodeDescription;
@@ -174,7 +176,34 @@ module.exports = function (req, res, logFacilities, config, next) {
   };
 
   if (req.method != "HEAD") {
+    res.write = function (chunk, encoding, callback) {
+      if (!piping && chunk && !maximumCachedResponseSizeExceeded) {
+        const processedChunk = Buffer.from(
+          chunk,
+          typeof encoding === "string" ? encoding : undefined
+        ).toString("latin1");
+        if (
+          maximumCachedResponseSize !== null &&
+          maximumCachedResponseSize !== undefined &&
+          responseBody.length + processedChunk.length >
+            maximumCachedResponseSize
+        ) {
+          maximumCachedResponseSizeExceeded = true;
+        } else {
+          try {
+            responseBody += processedChunk;
+            // eslint-disable-next-line no-unused-vars
+          } catch (err) {
+            maximumCachedResponseSizeExceeded = true;
+          }
+        }
+      }
+
+      originalWrite(chunk, encoding, callback);
+    };
+
     res.on("pipe", (src) => {
+      piping = true;
       src.on("data", (chunk) => {
         if (!maximumCachedResponseSizeExceeded) {
           const processedChunk = Buffer.from(chunk).toString("latin1");
@@ -195,6 +224,10 @@ module.exports = function (req, res, logFacilities, config, next) {
           }
         }
       });
+    });
+
+    res.on("unpipe", () => {
+      piping = false;
     });
   }
 
