@@ -14,12 +14,9 @@ jest.mock("../src/utils/cacheControlUtils.js", () => ({
 }));
 
 describe("SVR.JS Cache mod", () => {
-  let req, res, logFacilities, config, next, resWriteHead, resEnd;
+  let req, res, logFacilities, config, next;
 
   beforeEach(() => {
-    resWriteHead = jest.fn();
-    resEnd = jest.fn();
-
     req = {
       method: "GET",
       headers: {},
@@ -29,9 +26,9 @@ describe("SVR.JS Cache mod", () => {
 
     res = {
       headers: {},
-      writeHead: resWriteHead,
+      writeHead: jest.fn(),
       write: jest.fn(),
-      end: resEnd,
+      end: jest.fn(),
       setHeader: jest.fn(),
       getHeaderNames: jest.fn(() => []),
       getHeaders: jest.fn(() => ({})),
@@ -96,6 +93,11 @@ describe("SVR.JS Cache mod", () => {
     // Reset mocks for the second invocation
     jest.clearAllMocks();
     next.mockReset();
+    res.setHeader = jest.fn();
+    res.removeHeader = jest.fn();
+    res.writeHead = jest.fn();
+    res.write = jest.fn();
+    res.end = jest.fn();
 
     // Second request: retrieve from cache
     parseCacheControl.mockReturnValue({});
@@ -108,14 +110,12 @@ describe("SVR.JS Cache mod", () => {
       "The response is cached."
     );
     expect(res.setHeader).toHaveBeenCalledWith("X-SVRJS-Cache", "HIT");
-    expect(resWriteHead).toHaveBeenCalledWith(200, {
+    expect(res.writeHead).toHaveBeenCalledWith(200, {
       "cache-control": "max-age=300",
       "content-type": "application/json"
     });
-    expect(resEnd).toHaveBeenCalledWith(
-      Buffer.from("cached response body", "latin1"),
-      undefined,
-      undefined
+    expect(res.end).toHaveBeenCalledWith(
+      Buffer.from("cached response body", "latin1")
     );
     expect(next).not.toHaveBeenCalled(); // No middleware should be called
   });
