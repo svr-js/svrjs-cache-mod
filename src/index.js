@@ -68,6 +68,8 @@ module.exports = function (req, res, logFacilities, config, next) {
   }
 
   // Capture the response
+  const originalSetHeader = res.setHeader.bind(res);
+  const originalRemoveHeader = res.removeHeader.bind(res);
   const originalWriteHead = res.writeHead.bind(res);
   const originalWrite = res.write.bind(res);
   const originalEnd = res.end.bind(res);
@@ -77,6 +79,16 @@ module.exports = function (req, res, logFacilities, config, next) {
   let maximumCachedResponseSizeExceeded = false;
   let piping = false;
 
+  res.setHeader = function (name, value) {
+    writtenHeaders[name.toLowerCase()] = value;
+    originalSetHeader(name, value);
+  };
+
+  res.removeHeader = function (name) {
+    delete writtenHeaders[name.toLowerCase()];
+    originalRemoveHeader(name);
+  };
+
   res.writeHead = function (statusCode, statusCodeDescription, headers) {
     const properHeaders = headers ? headers : statusCodeDescription;
     if (typeof properHeaders === "object" && properHeaders !== null) {
@@ -85,7 +97,7 @@ module.exports = function (req, res, logFacilities, config, next) {
       });
     }
     writtenStatusCode = statusCode;
-    res.setHeader("X-SVRJS-Cache", "MISS");
+    originalSetHeader("X-SVRJS-Cache", "MISS");
     if (headers || typeof statusCodeDescription !== "object") {
       originalWriteHead(
         writtenStatusCode,
