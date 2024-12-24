@@ -15,6 +15,9 @@ module.exports = function (req, res, logFacilities, config, next) {
   const cacheVaryHeadersConfigured = config.cacheVaryHeaders
     ? config.cacheVaryHeaders
     : [];
+  const cacheIgnoreHeadersConfigured = config.cacheIgnoreHeaders
+    ? config.cacheIgnoreHeaders
+    : [];
   const maximumCachedResponseSize = config.maximumCachedResponseSize
     ? config.maximumCachedResponseSize
     : null;
@@ -174,6 +177,12 @@ module.exports = function (req, res, logFacilities, config, next) {
             .join("\n");
 
         varyCache.set(cacheKey, processedVary);
+
+        // Ignore headers
+        cacheIgnoreHeadersConfigured.forEach((header) => {
+          delete writtenHeaders[header.toLowerCase()];
+        });
+
         cache.set(cacheKeyWithVary, {
           body: responseBody,
           headers: writtenHeaders,
@@ -257,6 +266,9 @@ module.exports.commands = {
 
 module.exports.configValidators = {
   cacheVaryHeaders: (value) =>
+    Array.isArray(value) &&
+    value.every((element) => typeof element === "string"),
+  cacheIgnoreHeaders: (value) =>
     Array.isArray(value) &&
     value.every((element) => typeof element === "string"),
   maximumCachedResponseSize: (value) =>
