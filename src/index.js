@@ -84,12 +84,12 @@ module.exports = function (req, res, logFacilities, config, next) {
 
   res.setHeader = function (name, value) {
     writtenHeaders[name.toLowerCase()] = value;
-    originalSetHeader(name, value);
+    return originalSetHeader(name, value);
   };
 
   res.removeHeader = function (name) {
     delete writtenHeaders[name.toLowerCase()];
-    originalRemoveHeader(name);
+    return originalRemoveHeader(name);
   };
 
   res.writeHead = function (statusCode, statusCodeDescription, headers) {
@@ -102,13 +102,13 @@ module.exports = function (req, res, logFacilities, config, next) {
     writtenStatusCode = statusCode;
     originalSetHeader("X-SVRJS-Cache", "MISS");
     if (headers || typeof statusCodeDescription !== "object") {
-      originalWriteHead(
+      return originalWriteHead(
         writtenStatusCode,
         statusCodeDescription,
         writtenHeaders
       );
     } else {
-      originalWriteHead(writtenStatusCode, writtenHeaders);
+      return originalWriteHead(writtenStatusCode, writtenHeaders);
     }
   };
 
@@ -193,7 +193,7 @@ module.exports = function (req, res, logFacilities, config, next) {
       }
     }
 
-    originalEnd(chunk, encoding, callback);
+    return originalEnd(chunk, encoding, callback);
   };
 
   if (req.method != "HEAD") {
@@ -220,7 +220,7 @@ module.exports = function (req, res, logFacilities, config, next) {
         }
       }
 
-      originalWrite(chunk, encoding, callback);
+      return originalWrite(chunk, encoding, callback);
     };
 
     res.on("pipe", (src) => {
